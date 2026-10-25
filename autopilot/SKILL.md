@@ -1,9 +1,9 @@
 ---
-name: piloto-automatico
+name: autopilot
 description: Runs long, recurring tasks (weekly, monthly, period-close) by turning them into a saved, numbered runbook and executing it step by step, always in the same order, with explicit verification and a log of each run. Use whenever the user describes a routine that repeats ("every week I...", "every month-end...", "that update again"; in Portuguese "toda semana eu...", "todo fechamento...", "de novo aquela atualização", "roda de novo"), asks to automate, standardize or "put on autopilot" ("piloto automático") a multi-step process, asks to resume a routine done before, or mentions a many-step task they keep postponing, even without the word "automate".
 ---
 
-# Piloto Automático (Autopilot)
+# Autopilot
 
 Turns a long, repetitive task into a **runbook** saved to a file and executes it step by step, the same way every time. Recurring tasks usually go wrong for three reasons: a step is forgotten, the order drifts from one run to the next, or nobody checks the result. This skill addresses all three: a written runbook, in-order execution, and explicit verification.
 
@@ -29,15 +29,16 @@ The runbook has to survive between sessions, so where it is stored depends on th
 
 | Priority | Environment | How to recognize it | Where to read and write |
 |---|---|---|---|
-| A | Persistent local folder (Claude Code, or a chat with a computer folder connected) | There is a project directory or connected folder that outlives the session | File `rotinas/<name>.md` at the root of that folder |
-| B | claude.ai chat inside a **Project** | A Project documents tool is available (e.g. `Projects` with `project_search` / `project_read` / `project_write`) | Project document at path `rotinas/<name>.md` |
+| A | Persistent local folder (Claude Code, or a chat with a computer folder connected) | There is a project directory or connected folder that outlives the session | File `runbooks/<name>.md` at the root of that folder |
+| B | claude.ai chat inside a **Project** | A Project documents tool is available (e.g. `Projects` with `project_search` / `project_read` / `project_write`) | Project document at path `runbooks/<name>.md` |
 | C | Chat with no persistent storage | None of the above; the chat's filesystem is temporary | The user: ask them to paste the runbook from last time and, at the end, hand over the updated file for them to keep |
 
 **Why this order:** the local folder (A) is the most direct and can be version-controlled. Project documents (B) persist in the cloud and are visible on every device and in every chat of that Project. Manual mode (C) is the last resort, because it depends on the user keeping the file. Saving the same runbook in two places creates diverging copies, so use only the first location available.
 
 **How to look in each location:**
-- **A:** list `rotinas/` and read `rotinas/<name>.md`. If the exact name does not exist, list the folder and check whether any runbook matches the routine described, since it may have been saved under another name.
-- **B:** search the Project (`project_search`) with keywords from the routine and also check the document list (`project_info`) for paths starting with `rotinas/`. Then read the document you found (`project_read`). When saving, always write to the explicit path `rotinas/<name>.md`, so the runbook does not land in some default folder, and only surface the document to the user when it is created or its steps change, not on every run.
+- **A:** list `runbooks/` and read `runbooks/<name>.md`. If the exact name does not exist, list the folder and check whether any runbook matches the routine described, since it may have been saved under another name.
+- **B:** search the Project (`project_search`) with keywords from the routine and also check the document list (`project_info`) for paths starting with `runbooks/`. Then read the document you found (`project_read`). When saving, always write to the explicit path `runbooks/<name>.md`, so the runbook does not land in some default folder, and only surface the document to the user when it is created or its steps change, not on every run.
+- **Legacy location:** earlier Portuguese versions of this skill saved runbooks under `rotinas/`. If nothing is found under `runbooks/`, also look there; when you find one, keep using it in place rather than duplicating it.
 - **C:** ask once: "Do you have the runbook for this routine from last time? If so, paste it here." If not, go to step 2.
 
 If you are in C but the user says the routine recurs, suggest in one line moving the work to a Project (B) or to Claude Code (A), explaining that the runbook will then be found automatically next time.
@@ -57,7 +58,7 @@ Extract as much as possible from the conversation before asking. Ask at most one
 - **Definition of done:** how the user knows it worked (totals that tie, no #REF!, chart updated, etc.)
 - **Decision points:** where the process can branch and what to do in each case
 
-Write the runbook with this template and save it as `rotinas/<name>.md` in the location defined in "Where the runbook lives" (local folder, Project document, or a file handed to the user):
+Write the runbook with this template and save it as `runbooks/<name>.md` in the location defined in "Where the runbook lives" (local folder, Project document, or a file handed to the user):
 
 ```markdown
 # Routine: <readable name>
@@ -119,7 +120,7 @@ Actually run every item in "Final verification": open the file, recompute the to
 ## 5. Log and improve
 
 - Update "Last run" and add a line to the runbook's "Log", saving to the same location it was read from:
-  - **A (local folder):** edit `rotinas/<name>.md`.
+  - **A (local folder):** edit `runbooks/<name>.md`.
   - **B (Project):** read the current document, apply the changes and write the full content back to the same path (`project_write`), since there is no partial edit. This avoids wiping changes another session may have made.
   - **C (manual):** hand over the updated `<name>.md` file and remind the user, in one line, to replace the old version.
 - If any step needed adjusting, a workaround, or turned out to be unnecessary, propose the runbook change to the user (show before and after) and apply it if they approve.
